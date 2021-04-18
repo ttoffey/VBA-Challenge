@@ -1,0 +1,165 @@
+Sub StockMarketAnalysis()
+'Module 3
+'Worksheet Loop
+Dim a As Integer
+a = Application.Worksheets.Count
+For x = 1 To a
+    Worksheets(x).Activate
+    first_record = 0
+
+
+'Data Definitions
+Dim ticker As String
+Dim year As String
+Dim openPrice As Double
+Dim closePrice As Double
+Dim percentChange As Double
+Dim row_number As Integer
+Dim outputSwitch As Integer
+Dim greatestIncrease As Double
+Dim greatestDecrease As Double
+Dim greatestTotalVolume As Double
+
+'Summary Ticker ID
+Dim tickerIncrease As String
+Dim tickerDecrease As String
+Dim tickerTotalVolume As String
+
+'Initialize Values
+firstRecord = 0
+outputSwitch = 0
+greatestIncrease = 0
+greatestDecrease = 0
+greatestTotalVolume = 0
+
+'Summary Column Headers
+Cells(1, 9).Value = "Ticker"
+Cells(1, 10).Value = "Yearly Change"
+Cells(1, 11).Value = "Percent Change"
+Cells(1, 12).Value = "Total Volume"
+Cells(2, 14).Value = "Greatest % Increase"
+Cells(3, 14).Value = "Greatest % Decrease"
+Cells(4, 14).Value = "Greatest Total Volume"
+Cells(1, 15).Value = "Ticker"
+Cells(1, 16).Value = "Value"
+
+
+'Range("I1:Q1").EntireColumn.AutoFit
+'lrow = Worksheets(x).UsedRange.Rows.Count
+ActiveSheet.UsedRange.EntireColumn.AutoFit
+lrow = ActiveSheet.UsedRange.Rows.Count
+
+'LOGIC
+
+'First Record
+If (first_record = 0) Then
+    ticker = Cells(2, 1).Value
+    year = Left(Cells(2, 2).Value, 4)
+    openPrice = Cells(2, 3).Value
+    closePrice = Cells(2, 6).Value
+    totalVolume = 0
+    row_number = 2
+    first_record = 1
+     
+End If
+
+'All Other Records
+For i = 3 To lrow + 1
+    If (Cells(i, 1).Value = ticker) Then
+        closePrice = Cells(i, 6).Value
+        totalVolume = totalVolume + Cells(i, 7).Value
+
+'Check totalVolume = 0
+    ElseIf (totalVolume = 0) Then
+        yearlyChange = 0
+        percentChange = 0
+        outputSwitch = 1
+
+        
+'Check openPrice = 0 and closePrice is > 0
+    ElseIf (openPrice = 0 And closePrice > 0) Then
+        yearlyChange = closePrice - openPrice
+        percentChange = 1
+        outputSwitch = 1
+
+'Check openPrice = 0 and closePrice is < 0
+    ElseIf (openPrice = 0 And closePrice > 0) Then
+        yearlyChange = closePrice - openPrice
+        percentChange = -1
+        outputSwitch = 1
+                
+'Output Ticker Total - No 0 Values
+    Else
+        yearlyChange = closePrice - openPrice
+        percentChange = yearlyChange / openPrice
+        outputSwitch = 1
+    End If
+    
+    If (outputSwitch = 1) Then
+        Cells(row_number, 9).Value = ticker
+        Cells(row_number, 10).Value = yearlyChange
+        Cells(row_number, 11).Value = percentChange
+        Cells(row_number, 11).NumberFormat = "0.00%"
+        Cells(row_number, 12).Value = totalVolume
+'Set up new values
+        ticker = Cells(i, 1).Value
+        year = Left(Cells(i, 2).Value, 4)
+        openPrice = Cells(i, 3).Value
+        closePrice = Cells(i, 6).Value
+        totalVolume = Cells(i, 7).Value
+        row_number = row_number + 1
+        outputSwitch = 0
+  
+    End If
+
+Next i
+
+'Color Values
+For i = 2 To lrow + 1
+    If (Cells(i, 10).Value < 0) Then
+        Cells(i, 10).Interior.ColorIndex = 3
+    ElseIf (Cells(i, 10).Value > 0) Then
+        Cells(i, 10).Interior.ColorIndex = 4
+    End If
+    
+Next i
+
+'Greatest Increase and Decrease
+For i = 2 To lrow + 1
+    If (Cells(i, 11).Value > greatestIncrease) Then
+        greatestIncrease = Cells(i, 11).Value
+        tickerIncrease = Cells(i, 9).Value
+    ElseIf (Cells(i, 11).Value < greatestDecrease) Then
+        greatestDecrease = Cells(i, 11).Value
+        tickerDecrease = Cells(i, 9).Value
+    End If
+Next i
+    
+'Greatest Volume
+For i = 2 To lrow + 1
+    If (Cells(i, 12).Value > greatestTotalVolume) Then
+        greatestTotalVolume = Cells(i, 12).Value
+        tickerTotalVolume = Cells(i, 9).Value
+    End If
+
+Next i
+
+
+'Output Summary Table Values
+Cells(2, 15).Value = tickerIncrease
+Cells(3, 15).Value = tickerDecrease
+Cells(4, 15).Value = tickerTotalVolume
+Cells(2, 16).Value = greatestIncrease
+Cells(2, 16).NumberFormat = "0.00%"
+Cells(3, 16).Value = greatestDecrease
+Cells(3, 16).NumberFormat = "0.00%"
+Cells(4, 16).Value = greatestTotalVolume
+
+ActiveSheet.UsedRange.EntireColumn.AutoFit
+Next x
+
+End Sub
+
+
+
+
